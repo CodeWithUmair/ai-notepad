@@ -8,10 +8,10 @@ import { UserButton } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import AddNoteDialog from "@/components/AddNoteDialog";
+import AddEditNoteDialog from "@/components/AddEditNoteDialog";
 
 const Navbar = () => {
-  const [showAddNoteDialog, setShowAddNoteDialog] = useState(false);
+  const [showAddEditNoteDialog, setShowAddEditNoteDialog] = useState(false);
 
   return (
     <>
@@ -33,14 +33,17 @@ const Navbar = () => {
                 elements: { avatarBox: { width: "2.5rem", height: "2.5rem" } },
               }}
             />
-            <Button onClick={() => setShowAddNoteDialog(true)}>
+            <Button onClick={() => setShowAddEditNoteDialog(true)}>
               <Plus size={20} className="mr-2 h-4 w-4" />
               Add Note
             </Button>
           </div>
         </div>
       </div>
-      <AddNoteDialog open={showAddNoteDialog} setOpen={setShowAddNoteDialog} />
+      <AddEditNoteDialog
+        open={showAddEditNoteDialog}
+        setOpen={setShowAddEditNoteDialog}
+      />
     </>
   );
 };

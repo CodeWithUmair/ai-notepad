@@ -1,6 +1,9 @@
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { Note } from "@prisma/client";
+
 import { CreateNoteSchema, createNoteSchema } from "@/lib/validation/note";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -20,20 +23,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import LoadingButton from "@/components/ui/loading-button";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
 
-type AddNoteDialog = {
+type AddEditNoteDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  noteToEdit?: Note;
 };
 
-export default function AddNoteDialog({ open, setOpen }: AddNoteDialog) {
+export default function AddEditNoteDialog({
+  open,
+  setOpen,
+  noteToEdit,
+}: AddEditNoteDialogProps) {
   const router = useRouter();
   const form = useForm<CreateNoteSchema>({
     resolver: zodResolver(createNoteSchema),
     defaultValues: {
-      title: "",
-      content: "",
+      title: noteToEdit?.title || "",
+      content: noteToEdit?.content || "",
     },
   });
 
