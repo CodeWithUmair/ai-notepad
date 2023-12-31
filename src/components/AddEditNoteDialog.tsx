@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Note } from "@prisma/client";
@@ -35,6 +38,8 @@ export default function AddEditNoteDialog({
   setOpen,
   noteToEdit,
 }: AddEditNoteDialogProps) {
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+
   const router = useRouter();
   const form = useForm<CreateNoteSchema>({
     resolver: zodResolver(createNoteSchema),
@@ -46,13 +51,27 @@ export default function AddEditNoteDialog({
 
   async function onSubmit(input: CreateNoteSchema) {
     try {
-      const res = await fetch("/api/notes", {
-        method: "POST",
-        body: JSON.stringify(input),
-      });
+      if (noteToEdit) {
+        const response = await fetch("/api/notes", {
+          method: "PUT",
+          body: JSON.stringify({
+            id: noteToEdit.id,
+            ...input,
+          }),
+        });
+        if (!response.ok) throw Error("Status code: " + response.status);
 
-      if (!res.ok) throw Error("Status code: " + res.status);
-      form.reset();
+        toast.success("Note is updated.");
+      } else {
+        const response = await fetch("/api/notes", {
+          method: "POST",
+          body: JSON.stringify(input),
+        });
+
+        if (!response.ok) throw Error("Status code: " + response.status);
+        form.reset();
+        toast.success("Your Note is created.");
+      }
       router.refresh();
       setOpen(false);
     } catch (error) {
@@ -61,11 +80,33 @@ export default function AddEditNoteDialog({
     }
   }
 
+  async function deleteNote() {
+    if (!noteToEdit) return;
+    setDeleteInProgress(true);
+    try {
+      const response = await fetch("/api/notes", {
+        method: "DELETE",
+        body: JSON.stringify({
+          id: noteToEdit.id,
+        }),
+      });
+      if (!response.ok) throw Error("Status code: " + response.status);
+      router.refresh();
+      setOpen(false);
+      toast.success("Note Deleted. ");
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setDeleteInProgress(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Note</DialogTitle>
+          <DialogTitle>{noteToEdit ? "Edit Note" : "Add Note"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -95,7 +136,16 @@ export default function AddEditNoteDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter>
+            <DialogFooter className="gap-1 sm:gap-0">
+              <LoadingButton
+                type="button"
+                loading={deleteInProgress}
+                disabled={form.formState.isSubmitting}
+                onClick={deleteNote}
+                variant="destructive"
+              >
+                Delete note
+              </LoadingButton>
               <LoadingButton
                 type="submit"
                 loading={form.formState.isSubmitting}

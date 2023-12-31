@@ -9,8 +9,13 @@ import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import AddEditNoteDialog from "@/components/AddEditNoteDialog";
+import ThemeToggleButton from "@/components/ThemeToggleButton";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 
-const Navbar = () => {
+export default function Navbar() {
+  const { theme } = useTheme();
+
   const [showAddEditNoteDialog, setShowAddEditNoteDialog] = useState(false);
 
   return (
@@ -30,9 +35,11 @@ const Navbar = () => {
             <UserButton
               afterSignOutUrl="/"
               appearance={{
+                baseTheme: theme === "dark" ? dark : undefined,
                 elements: { avatarBox: { width: "2.5rem", height: "2.5rem" } },
               }}
             />
+            <ThemeToggleButton />
             <Button onClick={() => setShowAddEditNoteDialog(true)}>
               <Plus size={20} className="mr-2 h-4 w-4" />
               Add Note
@@ -46,6 +53,4 @@ const Navbar = () => {
       />
     </>
   );
-};
-
-export default Navbar;
+}
