@@ -26,7 +26,7 @@ export default function Note({ note }: NoteProps) {
   return (
     <>
       <Card
-        className="cursor-pointer transition-shadow hover:shadow-lg"
+        className="cursor-pointer transition-shadow hover:shadow-lg h-[350px]"
         onClick={() => setShowEditNoteDialog(true)}
       >
         <CardHeader>
@@ -36,8 +36,8 @@ export default function Note({ note }: NoteProps) {
             {wasUpdated && " (updated)"}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="whitespace-pre-line">{note.content}</p>
+        <CardContent className="h-[230px] overflow-y-scroll break-words xs:min-w-[350px] shadow-inner">
+          <p className="whitespace-pre-line pt-2">{note.content}</p>
         </CardContent>
       </Card>
       <AddEditNoteDialog

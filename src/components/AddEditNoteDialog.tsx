@@ -106,7 +106,9 @@ export default function AddEditNoteDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{noteToEdit ? "Edit Note" : "Add Note"}</DialogTitle>
+          <DialogTitle className="text-center">
+            {noteToEdit ? "Edit Note" : "Add Note"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -137,15 +139,17 @@ export default function AddEditNoteDialog({
               )}
             />
             <DialogFooter className="gap-1 sm:gap-0">
-              <LoadingButton
-                type="button"
-                loading={deleteInProgress}
-                disabled={form.formState.isSubmitting}
-                onClick={deleteNote}
-                variant="destructive"
-              >
-                Delete note
-              </LoadingButton>
+              {noteToEdit && (
+                <LoadingButton
+                  type="button"
+                  loading={deleteInProgress}
+                  disabled={form.formState.isSubmitting}
+                  onClick={deleteNote}
+                  variant="destructive"
+                >
+                  Delete note
+                </LoadingButton>
+              )}
               <LoadingButton
                 type="submit"
                 loading={form.formState.isSubmitting}
