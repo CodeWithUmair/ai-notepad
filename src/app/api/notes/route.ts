@@ -1,4 +1,6 @@
+import { notesIndex } from "@/lib/db/pinecone";
 import prisma from "@/lib/db/prisma";
+import { getEmbedding } from "@/lib/openai";
 import {
   createNoteSchema,
   deleteNoteSchema,
@@ -24,12 +26,35 @@ export async function POST(req: Request) {
 
     const { title, content } = parseResult.data;
 
-    const note = await prisma.note.create({
-      data: {
-        title,
-        content,
-        userId,
-      },
+
+    const embedding = await getEmbeddingForNote(title, content);
+    console.log("Embedding is done here: ")
+    const note = await prisma.$transaction(async (tx) => {
+  console.log("I'm in the $transaction prisma 😎")
+
+      const note = await tx.note.create({
+        data: {
+          title,
+          content,
+          userId,
+        }
+      })
+
+  console.log("Now I'm waiting for Pinecone error 🙄🙄🙄")
+  console.log("note: 👉👉👉", note)
+
+
+      await notesIndex.upsert([
+        {
+          id: note.id,
+          values: embedding,
+          metadata: {userId}
+        }
+      ])
+
+  console.log("I definately say that 'note' is a falsy value 😴")
+
+      return note;
     });
 
     return Response.json({ note }, { status: 201 });
@@ -122,4 +147,8 @@ export async function DELETE(req: Request) {
       { status: 500 },
     );
   }
+}
+
+async function getEmbeddingForNote(title: string, content: string|undefined) {
+  return getEmbedding(title + "\n\n" + content ?? "")
 }
