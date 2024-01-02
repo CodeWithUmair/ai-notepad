@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     const embedding = await getEmbeddingForNote(title, content);
 
     const note = await prisma.$transaction(async (tx) => {
+      // 1. Creating data in MongoDB
       const note = await tx.note.create({
         data: {
           title,
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
         },
       });
 
+      // 2. Creating the data in Pinecone Vector DB
       await notesIndex.upsert([
         {
           id: note.id,
@@ -85,12 +87,28 @@ export async function PUT(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const updatedNote = await prisma.note.update({
-      where: { id },
-      data: {
-        title,
-        content,
-      },
+    const embedding = await getEmbeddingForNote(title, content);
+
+    const updatedNote = await prisma.$transaction(async (tx) => {
+      // 1. Updating the data in MongoDB
+      const updatedNote = await tx.note.update({
+        where: { id },
+        data: {
+          title,
+          content,
+        },
+      });
+
+      // 2. Updating the data in Pinecone Vector DB
+      await notesIndex.upsert([
+        {
+          id,
+          values: embedding,
+          metadata: { userId },
+        },
+      ]);
+
+      return updatedNote;
     });
 
     return Response.json({ updatedNote }, { status: 200 });
@@ -129,7 +147,13 @@ export async function DELETE(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.note.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      // 1. Deleting the data from MongoDB
+      await tx.note.delete({ where: { id } });
+
+      // 2. Deleting the data from Pinecone Vector DB
+      await notesIndex.deleteOne(id);
+    });
 
     return Response.json({ message: "Note deleted" }, { status: 200 });
   } catch (error) {
