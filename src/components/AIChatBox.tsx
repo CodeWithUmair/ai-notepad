@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useChat } from "ai/react";
 import { Message } from "ai";
-import { Bot, XCircle } from "lucide-react";
+import { Bot, Trash, XCircle } from "lucide-react";
 
 import { useUser } from "@clerk/nextjs";
 
@@ -58,7 +58,16 @@ export default function AIChatBox({ open, onClose }: AIChatBoxProps) {
           ))}
         </div>
         <form onSubmit={handleSubmit} className="m-3 flex gap-1">
-          <Button></Button>
+          <Button
+            title="Clear Chat"
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            type="button"
+            onClick={() => setMessages([])}
+          >
+            <Trash />
+          </Button>
           <Input
             value={input}
             onChange={handleInputChange}
