@@ -41,6 +41,8 @@ export default function AIChatBox({ open, onClose }: AIChatBoxProps) {
     }
   }, [open]);
 
+  const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
+
   return (
     <div
       className={cn(
@@ -51,11 +53,33 @@ export default function AIChatBox({ open, onClose }: AIChatBoxProps) {
       <button onClick={onClose} className="mb-1 ms-auto block">
         <XCircle size={30} />
       </button>
-      <div className="flex h-[600px] flex-col rounded border bg-background shadow-2xl">
+      <div className="flex h-[550px] flex-col rounded border bg-background shadow-2xl">
         <div className="mt-3 h-full overflow-y-auto px-3" ref={scrollRef}>
           {messages.map((message) => (
             <ChatMessage message={message} key={message.id} />
           ))}
+          {isLoading && lastMessageIsUser && (
+            <ChatMessage
+              message={{
+                role: "assistant",
+                content: "Thinking... 🤔",
+              }}
+            />
+          )}
+          {error && (
+            <ChatMessage
+              message={{
+                role: "assistant",
+                content: "Something went wrong. Please try again.",
+              }}
+            />
+          )}
+          {!error && messages.length === 0 && (
+            <div className="flex h-full items-center justify-center gap-3">
+              <Bot />
+              Ask the AI a question about your notes.
+            </div>
+          )}
         </div>
         <form onSubmit={handleSubmit} className="m-3 flex gap-1">
           <Button
@@ -81,7 +105,11 @@ export default function AIChatBox({ open, onClose }: AIChatBoxProps) {
   );
 }
 
-function ChatMessage({ message: { role, content } }: { message: Message }) {
+function ChatMessage({
+  message: { role, content },
+}: {
+  message: Pick<Message, "role" | "content">;
+}) {
   const { user } = useUser();
 
   const isAiMessage = role === "assistant";
