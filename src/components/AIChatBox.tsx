@@ -3,6 +3,7 @@ import { useChat } from "ai/react";
 import { XCircle } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Message } from "ai";
 
 type AIChatBoxProps = {
   open: boolean;
@@ -37,4 +38,11 @@ export default function AIChatBox({ open, onClose }: AIChatBoxProps) {
       </div>
     </div>
   );
+}
+
+function ChatMessage({message: {role, content}}: {message: Message}) {
+  return <div>
+  <div>{role}</div>
+  <div>{content}</div>
+  </div>
 }
