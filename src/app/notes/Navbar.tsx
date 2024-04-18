@@ -45,7 +45,7 @@ export default function Navbar() {
               <Plus size={20} className="mr-2 h-4 w-4" />
               Add Note
             </Button>
-            <AIChatButton/>
+            <AIChatButton />
           </div>
         </div>
       </div>
